@@ -1,4 +1,4 @@
-module github.com/mateusveloso/go-track-log
+module github.com/mateusveloso/go-stack-log
 
 go 1.16
 
