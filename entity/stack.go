@@ -2,30 +2,16 @@ package entity
 
 import "time"
 
-var validTypes = map[int]string{
-	1: "INFO",
-	2: "LOG",
-	3: "WARN",
-	4: "ERROR",
-}
-
 //Stack data
 type Stack struct {
 	ID        ID
 	Title     string
-	Logs      []Log
+	Logs      []ID
 	CreatedAt time.Time
 }
 
-//Log data
-type Log struct {
-	ID        ID
-	Type      string
-	Text      string
-	CreatedAt time.Time
-}
-
-func NewStackLog(StackTitle string) (*Stack, error) {
+//NewStack create a new Stack
+func NewStack(StackTitle string) (*Stack, error) {
 	stack := &Stack{
 		ID:        NewID(),
 		Title:     StackTitle,
@@ -37,17 +23,39 @@ func NewStackLog(StackTitle string) (*Stack, error) {
 	return stack, nil
 }
 
+func (s *Stack) AddLog(id ID) error {
+	if _, err := s.GetLog(id); err == nil {
+		return ErrLogAlreadyBorrowed
+	}
+	s.Logs = append(s.Logs, id)
+	return nil
+}
+
+//RemoveLog remove a log
+func (s *Stack) RemoveLog(id ID) error {
+	for i, j := range s.Logs {
+		if j == id {
+			s.Logs = append(s.Logs[:i], s.Logs[i+1:]...)
+			return nil
+		}
+	}
+	return ErrNotFound
+}
+
+//GetLog get a log
+func (s *Stack) GetLog(id ID) (ID, error) {
+	for _, v := range s.Logs {
+		if v == id {
+			return id, nil
+		}
+	}
+	return id, ErrNotFound
+}
+
+//Validate validate data
 func (s *Stack) Validate() error {
 	if s.Title == "" {
 		return ErrInvalidEntity
 	}
 	return nil
-}
-
-func (log *Log) SetType(t int) error {
-	if tp, ok := validTypes[t]; ok {
-		log.Type = tp
-		return nil
-	}
-	return ErrNotValidTypeLog
 }
